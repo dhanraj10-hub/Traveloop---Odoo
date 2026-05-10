@@ -138,6 +138,8 @@ def my_trips():
     trips = Trip.query.filter_by(user_id=user.id).order_by(Trip.created_at.desc()).all()
     return render_template('my_trips.html', user=user, trips=trips)
 
+from datetime import datetime
+
 @app.route('/trips/create', methods=['GET', 'POST'])
 @login_required
 def create_trip():
@@ -154,6 +156,7 @@ def create_trip():
         db.session.add(trip)
         db.session.commit()
         return redirect(url_for('itinerary_builder', trip_id=trip.id))
+
     return render_template('create_trip.html', user=User.query.get(session['user_id']))
 
 @app.route('/trips/<int:trip_id>/builder', methods=['GET', 'POST'])
@@ -342,6 +345,13 @@ def search_cities():
         {"name": "Kyoto", "country": "Japan", "cost_index": "Medium", "popularity": 88},
         {"name": "Santorini", "country": "Greece", "cost_index": "High", "popularity": 91},
         {"name": "Maldives", "country": "Maldives", "cost_index": "Very High", "popularity": 93},
+        {"name": "Delhi", "country": "India", "cost_index": "High", "popularity": 98},
+        {"name": "Dubai", "country": "UAE", "cost_index": "High", "popularity": 91},
+        {"name": "Vancouver", "country": "Canada", "cost_index": "High", "popularity": 95},
+        {"name": "Hanoi", "country": "Vietnam", "cost_index": "Low", "popularity": 94},
+           {"name": "Cairo", "country": "Egypt", "cost_index": "Low", "popularity": 94},
+        {"name": "Chennai", "country": "India", "cost_index": "Low", "popularity": 90},
+        {"name": "Shimla", "country": "India", "cost_index": "Low", "popularity": 88},
     ]
     filtered = [c for c in cities if q in c['name'].lower() or q in c['country'].lower()] if q else cities
     return jsonify(filtered)
