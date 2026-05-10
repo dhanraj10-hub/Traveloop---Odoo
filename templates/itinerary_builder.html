@@ -8,6 +8,7 @@
       <p style="color:var(--ink-lt);font-size:.85rem;margin-bottom:4px;">✈️ {{ trip.name }}</p>
       <h1 style="font-size:1.8rem;">Itinerary Builder</h1>
     </div>
+
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <a href="{{ url_for('itinerary_view', trip_id=trip.id) }}" class="btn btn-outline">👁 Preview</a>
       <a href="{{ url_for('trip_budget', trip_id=trip.id) }}" class="btn btn-outline">💰 Budget</a>
@@ -20,8 +21,9 @@
 <div class="page-body">
   <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;">
 
-    <!-- Left: Stops -->
+    <!-- LEFT -->
     <div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
         <h2 style="font-size:1.1rem;">Trip Stops ({{ trip.stops|length }})</h2>
         <button class="btn btn-primary" onclick="openModal('addStopModal')">+ Add Stop</button>
@@ -30,163 +32,373 @@
       {% if trip.stops %}
         {% for stop in trip.stops %}
         <div class="stop-card fade-up" id="stop-{{ stop.id }}">
+
           <div class="stop-header">
             <div>
               <div class="stop-city">📍 {{ stop.city }}, {{ stop.country }}</div>
               <div class="stop-dates">{{ stop.start_date }} → {{ stop.end_date }}</div>
             </div>
+
             <div style="display:flex;gap:6px;">
-              <button class="btn btn-ghost btn-sm" onclick="openAddActivity({{ stop.id }}, '{{ stop.city }}')">+ Activity</button>
-              <button class="btn btn-ghost btn-sm" style="color:var(--coral);"
-                onclick="deleteStop({{ stop.id }})">🗑</button>
+              <button class="btn btn-ghost btn-sm"
+                onclick="openAddActivity({{ stop.id }}, &quot;{{ stop.city }}&quot;)">
+                + Activity
+              </button>
+
+              <button class="btn btn-ghost btn-sm"
+                style="color:var(--coral);"
+                onclick="deleteStop({{ stop.id }})">
+                🗑
+              </button>
             </div>
           </div>
+
           <div class="stop-body" id="activities-{{ stop.id }}">
+
             {% if stop.activities %}
               {% for act in stop.activities %}
-              {% set cat_colors = {'sightseeing':'#2A7D6F','food':'#E8A030','adventure':'#E05A3A','culture':'#6B48FF','wellness':'#EC4899'} %}
+
+              {% set cat_colors = {
+                'sightseeing':'#2A7D6F',
+                'food':'#E8A030',
+                'adventure':'#E05A3A',
+                'culture':'#6B48FF',
+                'wellness':'#EC4899',
+                'shopping':'#14B8A6',
+                'nightlife':'#8B5CF6',
+                'nature':'#16A34A',
+                'sports':'#2563EB',
+                'photography':'#F97316',
+                'festival':'#D946EF',
+                'roadtrip':'#0EA5E9',
+                'relax':'#10B981',
+                'local':'#F43F5E'
+              } %}
+
               <div class="activity-row" id="act-{{ act.id }}">
-                <div class="activity-cat-dot" style="background:{{ cat_colors.get(act.category,'#999') }};"></div>
+                <div class="activity-cat-dot"
+                  style="background:{{ cat_colors.get(act.category,'#999') }};">
+                </div>
+
                 <div style="flex:1;">
                   <div class="activity-name">{{ act.name }}</div>
-                  <div style="font-size:.78rem;color:var(--ink-lt);">{{ act.category }} · {{ act.duration }}{% if act.time_slot %} · {{ act.time_slot }}{% endif %}</div>
+
+                  <div style="font-size:.78rem;color:var(--ink-lt);">
+                    {{ act.category }}
+                    · {{ act.duration }}
+
+                    {% if act.time_slot %}
+                    · {{ act.time_slot }}
+                    {% endif %}
+                  </div>
                 </div>
-                <div class="activity-cost">{% if act.cost > 0 %}${{ "%.0f"|format(act.cost) }}{% else %}Free{% endif %}</div>
-                <span class="activity-delete" onclick="deleteActivity({{ act.id }})">✕</span>
+
+                <div class="activity-cost">
+                  {% if act.cost > 0 %}
+                    ${{ "%.0f"|format(act.cost) }}
+                  {% else %}
+                    Free
+                  {% endif %}
+                </div>
+
+                <span class="activity-delete"
+                  onclick="deleteActivity({{ act.id }})">
+                  ✕
+                </span>
               </div>
+
               {% endfor %}
+
             {% else %}
               <div style="text-align:center;padding:20px;color:var(--ink-lt);font-size:.88rem;">
-                No activities yet. <span style="color:var(--amber);cursor:pointer;" onclick="openAddActivity({{ stop.id }}, '{{ stop.city }}')">Add one →</span>
+                No activities yet.
+                <span style="color:var(--amber);cursor:pointer;"
+                  onclick="openAddActivity({{ stop.id }}, '{{ stop.city }}')">
+                  Add one →
+                </span>
               </div>
             {% endif %}
           </div>
         </div>
         {% endfor %}
+
       {% else %}
         <div class="card">
           <div class="empty-state">
             <div class="empty-icon">📍</div>
             <h3>No stops added yet</h3>
             <p>Add cities to start building your itinerary.</p>
-            <button class="btn btn-primary" style="margin-top:16px;" onclick="openModal('addStopModal')">Add First Stop</button>
+
+            <button class="btn btn-primary"
+              style="margin-top:16px;"
+              onclick="openModal('addStopModal')">
+              Add First Stop
+            </button>
           </div>
         </div>
       {% endif %}
     </div>
 
-    <!-- Right: City + Activity Search -->
+    <!-- RIGHT -->
     <div>
+
+      <!-- DISCOVER CITIES -->
       <div class="card fade-up fade-up-1" style="position:sticky;top:24px;">
         <div class="card-body">
+
           <div style="font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-            🔍 Discover Cities
+            🌍 Discover Cities
           </div>
+
           <div class="search-wrap">
             <span class="search-icon">🏙</span>
-            <input type="text" class="form-control" id="citySearchInput" placeholder="Search cities...">
+
+            <input type="text"
+              class="form-control"
+              id="citySearchInput"
+              placeholder="Search any city in the world...">
           </div>
-          <div class="search-results" id="citySearchResults" style="display:none;position:relative;top:0;border-radius:8px;margin-top:8px;"></div>
+
+          <div class="search-results"
+            id="citySearchResults"
+            style="display:none;position:relative;top:0;border-radius:8px;margin-top:8px;">
+          </div>
+
+          <div style="margin-top:10px;font-size:.78rem;color:var(--ink-lt);">
+            Search cities worldwide 🌎
+          </div>
+
         </div>
       </div>
 
+      <!-- DISCOVER ACTIVITIES -->
       <div class="card fade-up fade-up-2" style="margin-top:16px;">
         <div class="card-body">
-          <div style="font-weight:700;margin-bottom:16px;">🎯 Discover Activities</div>
-          <select class="form-control" id="activityCatFilter" style="margin-bottom:8px;" onchange="triggerActivitySearch()">
+
+          <div style="font-weight:700;margin-bottom:16px;">
+            🎯 Discover Activities
+          </div>
+
+          <select class="form-control"
+            id="activityCatFilter"
+            style="margin-bottom:8px;"
+            onchange="triggerActivitySearch()">
+
             <option value="">All Categories</option>
+
             <option value="sightseeing">Sightseeing</option>
             <option value="food">Food & Dining</option>
             <option value="adventure">Adventure</option>
             <option value="culture">Culture</option>
             <option value="wellness">Wellness</option>
+            <option value="shopping">Shopping</option>
+            <option value="nightlife">Nightlife</option>
+            <option value="nature">Nature</option>
+            <option value="sports">Sports</option>
+            <option value="photography">Photography</option>
+            <option value="festival">Festival</option>
+            <option value="roadtrip">Road Trip</option>
+            <option value="relax">Relaxation</option>
+            <option value="local">Local Experience</option>
+            <option value="custom">Custom</option>
+
           </select>
+
           <div class="search-wrap">
             <span class="search-icon">🎯</span>
-            <input type="text" class="form-control" id="actSearchInput" placeholder="Search activities...">
+
+            <input type="text"
+              class="form-control"
+              id="actSearchInput"
+              placeholder="Search activities...">
           </div>
-          <div id="actSearchResults" style="margin-top:8px;max-height:280px;overflow-y:auto;"></div>
+
+          <div id="actSearchResults"
+            style="margin-top:8px;max-height:350px;overflow-y:auto;">
+          </div>
+
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Add Stop Modal -->
+<!-- ADD STOP MODAL -->
 <div class="modal-overlay" id="addStopModal">
   <div class="modal-box">
+
     <div class="modal-header">
       <div class="modal-title">📍 Add New Stop</div>
-      <button class="modal-close" onclick="closeModal('addStopModal')">✕</button>
+
+      <button class="modal-close"
+        onclick="closeModal('addStopModal')">
+        ✕
+      </button>
     </div>
-    <form method="POST" action="{{ url_for('itinerary_builder', trip_id=trip.id) }}">
+
+    <form method="POST"
+      action="{{ url_for('itinerary_builder', trip_id=trip.id) }}"
+      id="stopForm">
+
       <div class="form-group">
         <label class="form-label">City Name *</label>
-        <input type="text" name="city" class="form-control" id="stopCityInput" placeholder="e.g. Paris" required>
+
+        <input type="text"
+          name="city"
+          class="form-control"
+          id="stopCityInput"
+          placeholder="e.g. Paris"
+          required>
       </div>
+
       <div class="form-group">
         <label class="form-label">Country</label>
-        <input type="text" name="country" class="form-control" id="stopCountryInput" placeholder="e.g. France">
+
+        <input type="text"
+          name="country"
+          class="form-control"
+          id="stopCountryInput"
+          placeholder="e.g. France">
       </div>
+
       <div class="form-row">
+
         <div class="form-group">
           <label class="form-label">Arrival Date *</label>
-          <input type="date" name="start_date" class="form-control" required>
+
+          <input type="date"
+            name="start_date"
+            class="form-control"
+            id="arrivalDate"
+            required>
         </div>
+
         <div class="form-group">
           <label class="form-label">Departure Date *</label>
-          <input type="date" name="end_date" class="form-control" required>
+
+          <input type="date"
+            name="end_date"
+            class="form-control"
+            id="departureDate"
+            required>
         </div>
+
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">Add Stop</button>
+
+      <button type="submit"
+        class="btn btn-primary"
+        style="width:100%;">
+        Add Stop
+      </button>
+
     </form>
   </div>
 </div>
 
-<!-- Add Activity Modal -->
+<!-- ADD ACTIVITY MODAL -->
 <div class="modal-overlay" id="addActivityModal">
   <div class="modal-box">
+
     <div class="modal-header">
-      <div class="modal-title">🎯 Add Activity to <span id="activityStopName"></span></div>
-      <button class="modal-close" onclick="closeModal('addActivityModal')">✕</button>
+      <div class="modal-title">
+        🎯 Add Activity to
+        <span id="activityStopName"></span>
+      </div>
+
+      <button class="modal-close"
+        onclick="closeModal('addActivityModal')">
+        ✕
+      </button>
     </div>
+
     <div id="activityForm">
+
       <input type="hidden" id="activityStopId">
+
       <div class="form-group">
         <label class="form-label">Activity Name *</label>
-        <input type="text" class="form-control" id="actName" placeholder="e.g. Eiffel Tower Visit">
+
+        <input type="text"
+          class="form-control"
+          id="actName"
+          placeholder="e.g. Eiffel Tower Visit">
       </div>
+
       <div class="form-row">
+
         <div class="form-group">
           <label class="form-label">Category</label>
+
           <select class="form-control" id="actCategory">
+
             <option value="sightseeing">Sightseeing</option>
             <option value="food">Food & Dining</option>
             <option value="adventure">Adventure</option>
             <option value="culture">Culture</option>
             <option value="wellness">Wellness</option>
+            <option value="shopping">Shopping</option>
+            <option value="nightlife">Nightlife</option>
+            <option value="nature">Nature</option>
+            <option value="sports">Sports</option>
+            <option value="photography">Photography</option>
+            <option value="festival">Festival</option>
+            <option value="roadtrip">Road Trip</option>
+            <option value="relax">Relaxation</option>
+            <option value="local">Local Experience</option>
+            <option value="custom">Custom</option>
+
           </select>
         </div>
+
         <div class="form-group">
           <label class="form-label">Cost (USD)</label>
-          <input type="number" class="form-control" id="actCost" placeholder="0" min="0" step="0.01">
+
+          <input type="number"
+            class="form-control"
+            id="actCost"
+            placeholder="0"
+            min="0"
+            step="0.01">
         </div>
       </div>
+
       <div class="form-row">
+
         <div class="form-group">
           <label class="form-label">Duration</label>
-          <input type="text" class="form-control" id="actDuration" placeholder="e.g. 2 hrs">
+
+          <input type="text"
+            class="form-control"
+            id="actDuration"
+            placeholder="e.g. 2 hrs">
         </div>
+
         <div class="form-group">
           <label class="form-label">Time Slot</label>
-          <input type="text" class="form-control" id="actTimeSlot" placeholder="e.g. 10:00 AM">
+
+          <input type="text"
+            class="form-control"
+            id="actTimeSlot"
+            placeholder="e.g. 10:00 AM">
         </div>
+
       </div>
+
       <div class="form-group">
         <label class="form-label">Description</label>
-        <textarea class="form-control" id="actDesc" rows="2" placeholder="Optional notes..."></textarea>
+
+        <textarea class="form-control"
+          id="actDesc"
+          rows="2"
+          placeholder="Optional notes..."></textarea>
       </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="submitActivity()">Add Activity</button>
+
+      <button class="btn btn-primary"
+        style="width:100%;"
+        onclick="submitActivity()">
+        Add Activity
+      </button>
+
     </div>
   </div>
 </div>
@@ -195,32 +407,78 @@
 
 {% block scripts %}
 <script>
+
 let currentStopId = null;
 
+/* ---------------- DATE VALIDATION ---------------- */
+
+const today = new Date().toISOString().split('T')[0];
+
+const arrivalInput = document.getElementById('arrivalDate');
+const departureInput = document.getElementById('departureDate');
+
+if (arrivalInput && departureInput) {
+
+  arrivalInput.min = today;
+  departureInput.min = today;
+
+  arrivalInput.addEventListener('change', () => {
+
+    departureInput.min = arrivalInput.value;
+
+    if (
+      departureInput.value &&
+      departureInput.value < arrivalInput.value
+    ) {
+      departureInput.value = arrivalInput.value;
+    }
+  });
+}
+
+/* ---------------- ACTIVITY MODAL ---------------- */
+
 function openAddActivity(stopId, stopName) {
+
   currentStopId = stopId;
+
   document.getElementById('activityStopId').value = stopId;
   document.getElementById('activityStopName').textContent = stopName;
+
   document.getElementById('actName').value = '';
   document.getElementById('actCost').value = '';
   document.getElementById('actDuration').value = '';
   document.getElementById('actTimeSlot').value = '';
   document.getElementById('actDesc').value = '';
+
   openModal('addActivityModal');
 }
 
 async function submitActivity() {
+
   const stopId = document.getElementById('activityStopId').value;
+
   const name = document.getElementById('actName').value.trim();
-  if (!name) { showToast('Enter an activity name', 'error'); return; }
+
+  if (!name) {
+    showToast('Enter an activity name', 'error');
+    return;
+  }
+
   const data = {
-    name, category: document.getElementById('actCategory').value,
+    name,
+    category: document.getElementById('actCategory').value,
     cost: parseFloat(document.getElementById('actCost').value) || 0,
     duration: document.getElementById('actDuration').value,
     time_slot: document.getElementById('actTimeSlot').value,
     description: document.getElementById('actDesc').value
   };
-  const r = await api('/api/stops/' + stopId + '/activities', 'POST', data);
+
+  const r = await api(
+    '/api/stops/' + stopId + '/activities',
+    'POST',
+    data
+  );
+
   if (r.success) {
     showToast('Activity added!');
     closeModal('addActivityModal');
@@ -229,7 +487,9 @@ async function submitActivity() {
 }
 
 async function deleteActivity(id) {
+
   const r = await api('/api/activities/' + id, 'DELETE');
+
   if (r.success) {
     document.getElementById('act-' + id)?.remove();
     showToast('Activity removed');
@@ -237,70 +497,191 @@ async function deleteActivity(id) {
 }
 
 async function deleteStop(id) {
+
   if (!confirm('Remove this stop and all its activities?')) return;
+
   const r = await api('/api/stops/' + id, 'DELETE');
+
   if (r.success) {
     document.getElementById('stop-' + id)?.remove();
     showToast('Stop removed');
   }
 }
 
-// City search fills modal
-initCitySearch('citySearchInput', 'citySearchResults', (city) => {
-  document.getElementById('stopCityInput').value = city.name;
-  document.getElementById('stopCountryInput').value = city.country;
-  openModal('addStopModal');
-});
+/* ---------------- WORLDWIDE CITY SEARCH ---------------- */
 
-// Activity search with results
+initCitySearch(
+  'citySearchInput',
+  'citySearchResults',
+  (city) => {
+
+    document.getElementById('stopCityInput').value = city.name;
+    document.getElementById('stopCountryInput').value = city.country;
+
+    openModal('addStopModal');
+  }
+);
+
+/* ---------------- ACTIVITY SEARCH ---------------- */
+
 function triggerActivitySearch() {
-  document.getElementById('actSearchInput').dispatchEvent(new Event('input'));
+  document.getElementById('actSearchInput')
+    .dispatchEvent(new Event('input'));
 }
 
 function initActSearch() {
+
   const input = document.getElementById('actSearchInput');
   const results = document.getElementById('actSearchResults');
+
   if (!input) return;
+
   let debounce;
+
   input.addEventListener('input', () => {
+
     clearTimeout(debounce);
+
     debounce = setTimeout(async () => {
+
       const q = input.value.trim();
+
       const cat = document.getElementById('activityCatFilter').value;
-      const acts = await fetch('/api/activities/search?q=' + encodeURIComponent(q) + '&category=' + cat).then(r => r.json());
-      const colors = { sightseeing:'#2A7D6F', food:'#E8A030', adventure:'#E05A3A', culture:'#6B48FF', wellness:'#EC4899' };
-      results.innerHTML = acts.slice(0, 10).map(a => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;">
+
+      const acts = await fetch(
+        '/api/activities/search?q=' +
+        encodeURIComponent(q) +
+        '&category=' + cat
+      ).then(r => r.json());
+
+      const colors = {
+        sightseeing:'#2A7D6F',
+        food:'#E8A030',
+        adventure:'#E05A3A',
+        culture:'#6B48FF',
+        wellness:'#EC4899',
+        shopping:'#14B8A6',
+        nightlife:'#8B5CF6',
+        nature:'#16A34A',
+        sports:'#2563EB',
+        photography:'#F97316',
+        festival:'#D946EF',
+        roadtrip:'#0EA5E9',
+        relax:'#10B981',
+        local:'#F43F5E',
+        custom:'#64748B'
+      };
+
+      results.innerHTML = acts.slice(0, 50).map(a => `
+
+        <div style="
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          padding:12px 0;
+          border-bottom:1px solid var(--border);
+          gap:10px;
+        ">
+
           <div>
-            <div style="font-weight:600;font-size:.88rem;color:${colors[a.category]||'#333'}">🎯 ${a.name}</div>
-            <div style="font-size:.76rem;color:var(--ink-lt);">${a.category} · ${a.duration} · $${a.cost}</div>
+
+            <div style="
+              font-weight:600;
+              font-size:.9rem;
+              color:${colors[a.category] || '#333'}
+            ">
+              🎯 ${a.name}
+            </div>
+
+            <div style="
+              font-size:.76rem;
+              color:var(--ink-lt);
+            ">
+              ${a.category}
+              · ${a.duration}
+              · $${a.cost}
+            </div>
+
           </div>
-          <button class="btn btn-primary btn-sm" onclick="prefillActivity('${a.name.replace(/'/g,"\\'")}','${a.category}',${a.cost},'${a.duration}','${a.description.replace(/'/g,"\\'")}')">+ Add</button>
+
+          <button class="btn btn-primary btn-sm"
+            onclick="prefillActivity(
+              '${a.name.replace(/'/g,"\\\\'")}',
+              '${a.category}',
+              ${a.cost},
+              '${a.duration}',
+              '${(a.description || '').replace(/'/g,"\\\\'")}'
+            )">
+
+            + Add
+          </button>
+
         </div>
-      `).join('') || '<div style="padding:12px;color:var(--ink-lt);font-size:.88rem;">No activities found</div>';
+
+      `).join('')
+
+      || `
+        <div style="
+          padding:12px;
+          color:var(--ink-lt);
+          font-size:.88rem;
+        ">
+          No activities found
+        </div>
+      `;
+
     }, 250);
   });
-  // Load all on page ready
+
   input.dispatchEvent(new Event('input'));
 }
 
 function prefillActivity(name, cat, cost, duration, desc) {
+
   if (!currentStopId) {
+
     const stops = document.querySelectorAll('[id^="stop-"]');
-    if (stops.length === 0) { showToast('Add a stop first!', 'error'); return; }
+
+    if (stops.length === 0) {
+      showToast('Add a stop first!', 'error');
+      return;
+    }
+
     const firstId = stops[0].id.replace('stop-', '');
+
     openAddActivity(firstId, 'Stop');
   }
+
   document.getElementById('actName').value = name;
   document.getElementById('actCategory').value = cat;
   document.getElementById('actCost').value = cost;
   document.getElementById('actDuration').value = duration;
   document.getElementById('actDesc').value = desc;
-  if (!document.getElementById('addActivityModal').classList.contains('open')) {
+
+  if (
+    !document.getElementById('addActivityModal')
+      .classList.contains('open')
+  ) {
     openModal('addActivityModal');
   }
 }
 
 initActSearch();
+
 </script>
 {% endblock %}
+
+{% extends "base.html" %}
+{% block title %}Checklist — {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">            
+    <div>
+      <p style="color:var(--ink-lt);font-size:.85rem;margin-bottom:4px;">✈️ {{ trip.name }}</p>
+      <h1 style="font-size:1.8rem;">Packing Checklist</h1>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-outline">← Builder</a>
+    </div>
+  </div>      

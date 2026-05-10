@@ -62,7 +62,7 @@
               <a href="{{ url_for('checklist', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">✅</a>
               <a href="{{ url_for('trip_notes', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">📝</a>
               <button class="btn btn-ghost btn-sm" style="color:var(--coral);"
-                onclick="deleteTrip({{ trip.id }})">🗑</button>
+                onclick="deleteTrip('{{ trip.id }}')">🗑</button>
             </div>
           </td>
         </tr>
