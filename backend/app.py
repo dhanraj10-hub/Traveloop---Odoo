@@ -158,8 +158,8 @@ def create_trip():
             user_id=session['user_id'],
             name=request.form.get('name'),
             description=request.form.get('description', ''),
-            start_date=request.form.get('start_date'),
-            end_date=request.form.get('end_date'),
+            start_date=start_date,
+            end_date=end_date,
             budget=float(request.form.get('budget', 0)),
             is_public=bool(request.form.get('is_public'))
         )
