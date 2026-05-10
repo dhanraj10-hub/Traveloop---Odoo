@@ -144,6 +144,16 @@ from datetime import datetime
 @login_required
 def create_trip():
     if request.method == 'POST':
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+
+        start = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+
+        if end <= start:
+            flash("End date start date ke baad honi chahiye!", "error")
+            return redirect(url_for('create_trip'))
+
         trip = Trip(
             user_id=session['user_id'],
             name=request.form.get('name'),
