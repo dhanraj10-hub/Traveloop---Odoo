@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.name }} — Traveloop{% endblock %}
+
+{% block content %}
+<!-- Trip Hero -->
+<div style="background:linear-gradient(135deg,var(--ink) 0%,#2A7D6F 100%);padding:48px 40px 40px;color:white;margin-bottom:0;">
+  <div style="max-width:900px;">
+    <p style="color:rgba(255,255,255,.55);font-size:.85rem;margin-bottom:8px;">
+      ✈️ Trip Itinerary {% if trip.is_public %} · <span style="color:#6EE7B7;">🌍 Public</span>{% endif %}
+    </p>
+    <h1 style="color:white;margin-bottom:12px;">{{ trip.name }}</h1>
+    {% if trip.description %}
+    <p style="color:rgba(255,255,255,.7);font-size:.95rem;max-width:600px;">{{ trip.description }}</p>
+    {% endif %}
+    <div style="display:flex;gap:16px;margin-top:20px;flex-wrap:wrap;align-items:center;">
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">📅 {{ trip.start_date }} → {{ trip.end_date }}</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">📍 {{ trip.stops|length }} cities</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">💰 Total: ${{ "%.2f"|format(total_cost) }}</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">🧑 By {{ owner.name }}</span>
+    </div>
+    {% if user and user.id == trip.user_id %}
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+      <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-primary">✏️ Edit Itinerary</a>
+      <a href="{{ url_for('trip_budget', trip_id=trip.id) }}" class="btn btn-outline" style="border-color:rgba(255,255,255,.3);color:white;">💰 Budget</a>
+      <button class="btn btn-outline" style="border-color:rgba(255,255,255,.3);color:white;" onclick="shareTrip()">🔗 Share</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:40px;">
+
+  <!-- View Toggle -->
+  <div style="display:flex;gap:8px;margin-bottom:28px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;">
+    <button class="btn btn-dark btn-sm" id="btnTimeline" onclick="setView('timeline')">📋 Timeline</button>
+    <button class="btn btn-ghost btn-sm" id="btnCalendar" onclick="setView('calendar')">📅 Calendar</button>
+  </div>
+
+  <!-- Timeline View -->
+  <div id="viewTimeline">
+    {% if trip.stops %}
+    <div class="timeline">
+      {% for stop in trip.stops %}
+      <div class="timeline-item fade-up">
+        <div class="timeline-dot"></div>
+        <div class="card" style="margin-bottom:0;">
+          <div style="padding:20px 24px 16px;background:var(--sand);border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div>
+                <div style="font-size:1.15rem;font-weight:800;font-family:'Playfair Display',serif;">
+                  📍 {{ stop.city }}{% if stop.country %}, {{ stop.country }}{% endif %}
+                </div>
+                <div style="font-size:.82rem;color:var(--ink-lt);margin-top:3px;">
+                  {{ stop.start_date }} → {{ stop.end_date }}
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge badge-sand">{{ stop.activities|length }} activities</span>
+                {% if stop.activities %}
+                {% set stop_cost = namespace(n=0) %}
+                {% for act in stop.activities %}{% set stop_cost.n = stop_cost.n + act.cost %}{% endfor %}
+                <span class="badge badge-teal">💰 ${{ "%.0f"|format(stop_cost.n) }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          {% if stop.activities %}
+          <div style="padding:16px 24px;">
+            {% for act in stop.activities %}
+            {% set cat_colors = {'sightseeing':'#2A7D6F','food':'#E8A030','adventure':'#E05A3A','culture':'#6B48FF','wellness':'#EC4899'} %}
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div style="width:10px;height:10px;border-radius:50%;background:{{ cat_colors.get(act.category,'#999') }};margin-top:6px;flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:.95rem;">{{ act.name }}</div>
+                <div style="font-size:.8rem;color:var(--ink-lt);margin-top:2px;">
+                  {{ act.category|capitalize }}
+                  {% if act.duration %} · {{ act.duration }}{% endif %}
+                  {% if act.time_slot %} · 🕐 {{ act.time_slot }}{% endif %}
+                  {% if act.description %} — {{ act.description }}{% endif %}
+                </div>
+              </div>
+              <div style="font-weight:700;color:var(--teal);font-size:.9rem;white-space:nowrap;">
+                {% if act.cost > 0 %}${{ "%.0f"|format(act.cost) }}{% else %}Free{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div style="padding:24px;text-align:center;color:var(--ink-lt);font-size:.88rem;">No activities planned for this stop.</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Cost Summary -->
+    <div class="card fade-up" style="margin-top:32px;">
+      <div class="card-body">
+        <h3 style="margin-bottom:20px;">💰 Trip Summary</h3>
+        <div class="grid-3">
+          <div style="text-align:center;padding:16px;background:var(--sand);border-radius:10px;">
+            <div style="font-size:1.6rem;font-weight:900;font-family:'Playfair Display',serif;color:var(--teal);">{{ trip.stops|length }}</div>
+            <div style="font-size:.82rem;color:var(--ink-lt);margin-top:4px;">Cities</div>
+          </div>
+          {% set total_acts = namespace(n=0) %}
+          {% for s in trip.stops %}{% set total_acts.n = total_acts.n + s.activities|length %}{% endfor %}
+          <div style="text-align:center;padding:16px;background:var(--sand);border-radius:10px;">
+            <div style="font-size:1.6rem;font-weight:900;font-family:'Playfair Display',serif;color:var(--amber);">{{ total_acts.n }}</div>
+            <div style="font-size:.82rem;color:var(--ink-lt);margin-top:4px;">Activities</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--sand);border-radius:10px;">
+            <div style="font-size:1.6rem;font-weight:900;font-family:'Playfair Display',serif;color:var(--coral);">${{ "%.0f"|format(total_cost) }}</div>
+            <div style="font-size:.82rem;color:var(--ink-lt);margin-top:4px;">Total Cost</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-icon">📍</div>
+        <h3>No stops added</h3>
+        <p>This itinerary is empty.</p>
+        {% if user and user.id == trip.user_id %}
+        <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-primary" style="margin-top:16px;">Build Itinerary</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Calendar View -->
+  <div id="viewCalendar" style="display:none;">
+    <div class="card">
+      <div class="card-body">
+        <h3 style="margin-bottom:16px;">📅 Calendar View</h3>
+        <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setView(v) {
+  document.getElementById('viewTimeline').style.display = v === 'timeline' ? 'block' : 'none';
+  document.getElementById('viewCalendar').style.display  = v === 'calendar'  ? 'block' : 'none';
+  document.getElementById('btnTimeline').className = 'btn btn-sm ' + (v === 'timeline' ? 'btn-dark' : 'btn-ghost');
+  document.getElementById('btnCalendar').className  = 'btn btn-sm ' + (v === 'calendar'  ? 'btn-dark' : 'btn-ghost');
+}
+
+function shareTrip() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    showToast('Link copied to clipboard!');
+  });
+}
+</script>
+{% endblock %}
