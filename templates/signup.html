@@ -13,16 +13,28 @@
       <div style="font-size:3rem;margin-bottom:16px;">🌍</div>
       <h1>Start your<br><em>journey</em> today</h1>
       <p>Join thousands of travellers who plan smarter, travel better, and share their adventures.</p>
-      <div style="margin-top:40px;display:flex;flex-direction:column;gap:12px;text-align:left;max-width:300px;">
-        <div style="display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.7);">
-          <span style="color:var(--amber);font-size:1.2rem;">✓</span> Build multi-city itineraries in minutes
-        </div>
-        <div style="display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.7);">
-          <span style="color:var(--amber);font-size:1.2rem;">✓</span> Auto budget tracking & breakdowns
-        </div>
-        <div style="display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.7);">
-          <span style="color:var(--amber);font-size:1.2rem;">✓</span> Share trips publicly or privately
-        </div>
+      <div class="signup-benefits">
+
+    <div class="benefit-item">
+     🧠 AI Powered Trip Planning
+     </div>
+
+    <div class="benefit-item">
+    📍 Discover Hidden Gems
+    </div>
+
+    <div class="benefit-item">
+    💸 Smart Budget Prediction
+    </div>
+
+    <div class="benefit-item">
+    🗺 Real-Time Route Optimization
+    </div>
+
+      </div>
+    <div class="travel-quote">
+  “Adventure begins where comfort zones end.”
+    </div>
       </div>
     </div>
   </div>
@@ -33,10 +45,13 @@
         <div class="brand">Travel<span>oop</span></div>
         <div class="auth-tagline">Your personal travel planner</div>
       </div>
-
+      <div class="signup-progress">
+  🌍 Step 1 of 3 — Start Your Journey
+    </div>
       <h2 class="auth-title">Create account</h2>
-      <p class="auth-subtitle">Free forever. No credit card required.</p>
-
+  <p class="auth-subtitle">
+  Join Traveloop AI and discover smarter ways to travel.
+  </p>
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for cat, msg in messages %}
           <div class="alert alert-{{ cat }}">⚠️ {{ msg }}</div>
@@ -59,6 +74,9 @@
         <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
           Create Account →
         </button>
+        <div class="ai-powered">
+  ✨ Powered by Traveloop AI
+      </div>
       </form>
 
       <div class="auth-footer">

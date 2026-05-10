@@ -6,13 +6,38 @@
   <div class="page-title">
     <div>
       <h1>My Trips</h1>
-      <p style="color:var(--ink-lt);margin-top:4px;">All your planned adventures</p>
+      <p style="color:var(--ink-lt);margin-top:4px;">
+      Smart AI-powered trip management dashboard
+      </p>
     </div>
     <a href="{{ url_for('create_trip') }}" class="btn btn-primary">✈️ New Trip</a>
   </div>
 </div>
 
 <div class="page-body">
+  <div class="trip-dashboard">
+
+  <div class="dashboard-card">
+    🌍 Total Trips
+    <h2>{{ trips|length }}</h2>
+  </div>
+
+  <div class="dashboard-card">
+    ✈️ Cities Planned
+    <h2>35+</h2>
+  </div>
+
+  <div class="dashboard-card">
+    💰 Budget Managed
+    <h2>₹45K</h2>
+  </div>
+
+  <div class="dashboard-card">
+    ⭐ Explorer Rank
+    <h2>Elite</h2>
+  </div>
+
+</div>
 
   {% if trips %}
   <!-- Trip Table / Cards -->
@@ -33,6 +58,9 @@
         <tr style="border-bottom:1px solid var(--border);transition:background .15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
           <td style="padding:16px 20px;">
             <div style="font-weight:700;font-size:.95rem;">{{ trip.name }}</div>
+            <div class="trip-mood" style="font-size:.75rem;color:var(--ink-lt);margin-top:4px;">
+            🌄 Adventure • Relax • Luxury
+            </div>
             {% if trip.description %}
             <div style="font-size:.8rem;color:var(--ink-lt);margin-top:2px;">{{ trip.description[:50] }}{% if trip.description|length > 50 %}...{% endif %}</div>
             {% endif %}
@@ -62,7 +90,7 @@
               <a href="{{ url_for('checklist', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">✅</a>
               <a href="{{ url_for('trip_notes', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">📝</a>
               <button class="btn btn-ghost btn-sm" style="color:var(--coral);"
-                onclick="deleteTrip('{{ trip.id }}')">🗑</button>
+                onclick="deleteTrip({{ trip.id }})">🗑</button>
             </div>
           </td>
         </tr>
@@ -70,13 +98,18 @@
       </tbody>
     </table>
   </div>
+  <div class="ai-powered" style="margin-top:18px;text-align:center;color:var(--ink-lt);font-size:.85rem;"></div>
+  ✨ Powered by Traveloop AI Analytics    
+  </div>
 
   {% else %}
   <div class="card fade-up">
     <div class="empty-state">
       <div class="empty-icon">🗺️</div>
-      <h3>No trips yet!</h3>
-      <p>Your travel adventures start here.</p>
+      <h3>Your next adventure starts here ✈️</h3>
+      <p>
+      Create intelligent AI-powered travel plans in seconds.
+      </p>
       <a href="{{ url_for('create_trip') }}" class="btn btn-primary" style="margin-top:16px;">Plan My First Trip</a>
     </div>
   </div>
