@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — Traveloop</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-visual">
+    <div class="auth-visual-content">
+      <div style="font-size:3rem;margin-bottom:16px;">🌍</div>
+      <h1>Start your<br><em>journey</em> today</h1>
+      <p>Join thousands of travellers who plan smarter, travel better, and share their adventures.</p>
+      <div style="margin-top:40px;display:flex;flex-direction:column;gap:12px;text-align:left;max-width:300px;">
+        <div style="display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.7);">
+          <span style="color:var(--amber);font-size:1.2rem;">✓</span> Build multi-city itineraries in minutes
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.7);">
+          <span style="color:var(--amber);font-size:1.2rem;">✓</span> Auto budget tracking & breakdowns
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.7);">
+          <span style="color:var(--amber);font-size:1.2rem;">✓</span> Share trips publicly or privately
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-form-side">
+    <div class="auth-form-box fade-up">
+      <div class="auth-logo">
+        <div class="brand">Travel<span>oop</span></div>
+        <div class="auth-tagline">Your personal travel planner</div>
+      </div>
+
+      <h2 class="auth-title">Create account</h2>
+      <p class="auth-subtitle">Free forever. No credit card required.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">⚠️ {{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('signup') }}">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="name" class="form-control" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <input type="email" name="email" class="form-control" placeholder="you@email.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" minlength="6" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+          Create Account →
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Traveloop{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <p style="color:var(--ink-lt);font-size:.9rem;margin-bottom:4px;">Good day,</p>
+      <h1 style="font-size:2rem;">{{ user.name }} 👋</h1>
+    </div>
+    <a href="{{ url_for('create_trip') }}" class="btn btn-primary btn-lg fade-up">
+      ✈️ Plan New Trip
+    </a>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- Stats Strip -->
+  <div class="stats-strip fade-up fade-up-1">
+    <div class="stat-box">
+      <div class="stat-value">{{ trips|length }}</div>
+      <div class="stat-label">Total Trips</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">{{ trips|selectattr('is_public')|list|length }}</div>
+      <div class="stat-label">Shared Publicly</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">
+        {% set total_stops = namespace(n=0) %}
+        {% for t in trips %}{% set total_stops.n = total_stops.n + t.stops|length %}{% endfor %}
+        {{ total_stops.n }}
+      </div>
+      <div class="stat-label">Cities Planned</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">
+        {% set total_budget = namespace(n=0) %}
+        {% for t in trips %}{% set total_budget.n = total_budget.n + t.budget %}{% endfor %}
+        ${{ "%.0f"|format(total_budget.n) }}
+      </div>
+      <div class="stat-label">Total Budget</div>
+    </div>
+  </div>
+
+  <!-- Recent Trips -->
+  <div class="fade-up fade-up-2" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+    <h2 style="font-size:1.3rem;">Recent Trips</h2>
+    <a href="{{ url_for('my_trips') }}" class="btn btn-ghost btn-sm">View all →</a>
+  </div>
+
+  {% if trips %}
+  <div class="grid-3 fade-up fade-up-2">
+    {% for trip in trips %}
+    {% set emojis = ['🏖️','🏔️','🌆','🌸','🗼','🏰','🌅','🗺️'] %}
+    {% set emoji = emojis[loop.index0 % emojis|length] %}
+    <div class="card trip-card" onclick="window.location='{{ url_for('itinerary_view', trip_id=trip.id) }}'">
+      <div class="trip-card-cover" style="background:{{ ['linear-gradient(135deg,#2A7D6F,#E8A030)','linear-gradient(135deg,#1A1A2E,#E05A3A)','linear-gradient(135deg,#3B82F6,#8B5CF6)','linear-gradient(135deg,#059669,#065F46)'][loop.index0 % 4] }}">
+        <span style="position:relative;z-index:1;font-size:2.5rem;">{{ emoji }}</span>
+      </div>
+      <div class="trip-card-body">
+        <div class="trip-card-name">{{ trip.name }}</div>
+        <div class="trip-card-dates">📅 {{ trip.start_date }} → {{ trip.end_date }}</div>
+        <div class="trip-card-meta">
+          <span class="badge badge-sand">{{ trip.stops|length }} stops</span>
+          {% if trip.is_public %}<span class="badge badge-public">🌍 Public</span>{% endif %}
+          {% if trip.budget > 0 %}<span class="badge badge-amber">${{ "%.0f"|format(trip.budget) }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card fade-up fade-up-2">
+    <div class="empty-state">
+      <div class="empty-icon">✈️</div>
+      <h3>No trips yet</h3>
+      <p>Start planning your first adventure!</p>
+      <a href="{{ url_for('create_trip') }}" class="btn btn-primary" style="margin-top:16px;">Plan a Trip</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Inspiration Section -->
+  <div class="fade-up fade-up-3" style="margin-top:40px;margin-bottom:16px;">
+    <h2 style="font-size:1.3rem;">Popular Destinations</h2>
+  </div>
+
+  <div class="grid-4 fade-up fade-up-3" id="popularCities">
+    {% set popular = [
+      ('🗼','Paris','France','High',98),
+      ('🏯','Tokyo','Japan','Medium',96),
+      ('🌴','Bali','Indonesia','Low',94),
+      ('🏛️','Rome','Italy','Medium',90),
+      ('🌁','London','UK','High',93),
+      ('🕌','Istanbul','Turkey','Low',84),
+      ('🏰','Prague','Czech Republic','Low',85),
+      ('🌊','Santorini','Greece','High',91)
+    ] %}
+    {% for emoji, city, country, cost, pop in popular %}
+    <div class="card" style="cursor:pointer;padding:20px;" onclick="window.location='{{ url_for('create_trip') }}'">
+      <div style="font-size:2rem;margin-bottom:8px;">{{ emoji }}</div>
+      <div style="font-weight:700;font-size:.95rem;">{{ city }}</div>
+      <div style="font-size:.8rem;color:var(--ink-lt);">{{ country }}</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <span class="badge badge-sand" style="font-size:.7rem;">{{ cost }} cost</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

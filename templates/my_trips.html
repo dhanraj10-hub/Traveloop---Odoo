@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}My Trips — Traveloop{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <h1>My Trips</h1>
+      <p style="color:var(--ink-lt);margin-top:4px;">All your planned adventures</p>
+    </div>
+    <a href="{{ url_for('create_trip') }}" class="btn btn-primary">✈️ New Trip</a>
+  </div>
+</div>
+
+<div class="page-body">
+
+  {% if trips %}
+  <!-- Trip Table / Cards -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;" class="fade-up">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:var(--sand);border-bottom:1px solid var(--border);">
+          <th style="padding:14px 20px;text-align:left;font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-lt);">Trip Name</th>
+          <th style="padding:14px 20px;text-align:left;font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-lt);">Dates</th>
+          <th style="padding:14px 20px;text-align:center;font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-lt);">Stops</th>
+          <th style="padding:14px 20px;text-align:center;font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-lt);">Status</th>
+          <th style="padding:14px 20px;text-align:center;font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-lt);">Budget</th>
+          <th style="padding:14px 20px;text-align:right;font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-lt);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for trip in trips %}
+        <tr style="border-bottom:1px solid var(--border);transition:background .15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
+          <td style="padding:16px 20px;">
+            <div style="font-weight:700;font-size:.95rem;">{{ trip.name }}</div>
+            {% if trip.description %}
+            <div style="font-size:.8rem;color:var(--ink-lt);margin-top:2px;">{{ trip.description[:50] }}{% if trip.description|length > 50 %}...{% endif %}</div>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px;color:var(--ink-md);font-size:.88rem;">
+            📅 {{ trip.start_date }}<br>
+            <span style="color:var(--ink-lt);">→ {{ trip.end_date }}</span>
+          </td>
+          <td style="padding:16px 20px;text-align:center;">
+            <span class="badge badge-sand">{{ trip.stops|length }} cities</span>
+          </td>
+          <td style="padding:16px 20px;text-align:center;">
+            {% if trip.is_public %}
+              <span class="badge badge-public">🌍 Public</span>
+            {% else %}
+              <span class="badge badge-sand">🔒 Private</span>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px;text-align:center;font-weight:700;color:var(--teal);">
+            {% if trip.budget > 0 %}${{ "%.0f"|format(trip.budget) }}{% else %}—{% endif %}
+          </td>
+          <td style="padding:16px 20px;text-align:right;">
+            <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+              <a href="{{ url_for('itinerary_view', trip_id=trip.id) }}" class="btn btn-outline btn-sm">👁 View</a>
+              <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-dark btn-sm">✏️ Edit</a>
+              <a href="{{ url_for('trip_budget', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">💰</a>
+              <a href="{{ url_for('checklist', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">✅</a>
+              <a href="{{ url_for('trip_notes', trip_id=trip.id) }}" class="btn btn-ghost btn-sm">📝</a>
+              <button class="btn btn-ghost btn-sm" style="color:var(--coral);"
+                onclick="deleteTrip({{ trip.id }})">🗑</button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="card fade-up">
+    <div class="empty-state">
+      <div class="empty-icon">🗺️</div>
+      <h3>No trips yet!</h3>
+      <p>Your travel adventures start here.</p>
+      <a href="{{ url_for('create_trip') }}" class="btn btn-primary" style="margin-top:16px;">Plan My First Trip</a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function deleteTrip(id) {
+  if (!confirm('Delete this trip? This cannot be undone.')) return;
+  const r = await api('/api/trips/' + id, 'DELETE');
+  if (r.success) { showToast('Trip deleted'); location.reload(); }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Traveloop{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+{% block body %}
+<div class="page-wrapper">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✈</div>
+      <h2>Travel<span>oop</span></h2>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a href="{{ url_for('my_trips') }}" class="nav-link {% if request.endpoint == 'my_trips' %}active{% endif %}">
+        <span class="nav-icon">🗺️</span> My Trips
+      </a>
+      <a href="{{ url_for('create_trip') }}" class="nav-link {% if request.endpoint == 'create_trip' %}active{% endif %}">
+        <span class="nav-icon">➕</span> New Trip
+      </a>
+    </div>
+
+    <div class="nav-section" style="margin-top: 8px;">
+      <div class="nav-label">Account</div>
+      <a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">
+        <span class="nav-icon">👤</span> Profile
+      </a>
+      <a href="{{ url_for('logout') }}" class="nav-link">
+        <span class="nav-icon">🚪</span> Logout
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar">{{ session.user_name[0]|upper if session.user_name else 'U' }}</div>
+        <div>
+          <div class="user-name">{{ session.user_name or 'Traveler' }}</div>
+          <div class="user-role">Explorer</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="mobile-nav" style="display:none;">
+  <a href="{{ url_for('dashboard') }}" class="mobile-nav-item">
+    <span class="mobile-nav-icon">🏠</span> Home
+  </a>
+  <a href="{{ url_for('my_trips') }}" class="mobile-nav-item">
+    <span class="mobile-nav-icon">🗺️</span> Trips
+  </a>
+  <a href="{{ url_for('create_trip') }}" class="mobile-nav-item">
+    <span class="mobile-nav-icon">➕</span> New
+  </a>
+  <a href="{{ url_for('profile') }}" class="mobile-nav-item">
+    <span class="mobile-nav-icon">👤</span> Profile
+  </a>
+</nav>
+{% endblock %}
+
+<div id="toast"></div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

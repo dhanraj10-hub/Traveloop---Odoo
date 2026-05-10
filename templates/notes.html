@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Notes — {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <p style="color:var(--ink-lt);font-size:.85rem;margin-bottom:4px;">✈️ {{ trip.name }}</p>
+      <h1 style="font-size:1.8rem;">Trip Notes</h1>
+    </div>
+    <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-outline">← Builder</a>
+  </div>
+</div>
+
+<div class="page-body">
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;">
+
+    <!-- Notes List -->
+    <div>
+      {% if trip.notes %}
+        {% for note in trip.notes|sort(attribute='created_at', reverse=True) %}
+        <div class="card fade-up" style="margin-bottom:16px;" id="note-{{ note.id }}">
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+              <div>
+                {% if note.stop_ref %}
+                <span class="badge badge-teal" style="margin-bottom:6px;">📍 {{ note.stop_ref }}</span>
+                {% endif %}
+                <div style="font-size:.78rem;color:var(--ink-lt);">
+                  🕐 {{ note.created_at.strftime('%b %d, %Y %H:%M') if note.created_at else 'Just now' }}
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="color:var(--coral);"
+                onclick="deleteNote({{ note.id }})">🗑</button>
+            </div>
+            <p style="font-size:.95rem;line-height:1.7;white-space:pre-wrap;">{{ note.content }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="card fade-up">
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3>No notes yet</h3>
+            <p>Jot down hotel check-in details, reminders, or anything important for your trip.</p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Add Note -->
+    <div>
+      <div class="card fade-up fade-up-1" style="position:sticky;top:24px;">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:16px;">📝 New Note</div>
+          <form method="POST">
+            <div class="form-group">
+              <label class="form-label">Note / Reminder</label>
+              <textarea name="content" class="form-control" rows="5"
+                placeholder="Hotel check-in: 3 PM, contact: +1 555...&#10;&#10;Remember to book train tickets..."
+                required></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Related City (optional)</label>
+              <select name="stop_ref" class="form-control">
+                <option value="">— General Note —</option>
+                {% for stop in trip.stops %}
+                <option value="{{ stop.city }}">{{ stop.city }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Save Note</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card fade-up fade-up-2" style="margin-top:16px;background:var(--sand);border-color:var(--border);">
+        <div class="card-body" style="padding:20px;">
+          <div style="font-weight:700;margin-bottom:10px;">💡 Note Ideas</div>
+          {% for tip in ['Hotel check-in / check-out times','Local emergency contacts','Currency exchange rates','Transport booking confirmations','Restaurant reservations','Visa / entry requirements','Local SIM card info','Packing reminders'] %}
+          <div style="font-size:.82rem;color:var(--ink-md);padding:4px 0;cursor:pointer;"
+            onclick="document.querySelector('textarea[name=content]').value += '• {{ tip }}\n'">
+            + {{ tip }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function deleteNote(id) {
+  const r = await api('/api/notes/' + id, 'DELETE');
+  if (r.success) {
+    document.getElementById('note-' + id)?.remove();
+    showToast('Note deleted');
+  }
+}
+</script>
+{% endblock %}

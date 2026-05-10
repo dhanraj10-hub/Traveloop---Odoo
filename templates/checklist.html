@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Checklist — {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <p style="color:var(--ink-lt);font-size:.85rem;margin-bottom:4px;">✈️ {{ trip.name }}</p>
+      <h1 style="font-size:1.8rem;">Packing Checklist</h1>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-outline">← Builder</a>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+  {% set categories = ['clothing','documents','electronics','toiletries','general'] %}
+  {% set cat_icons = {'clothing':'👕','documents':'📄','electronics':'💻','toiletries':'🧴','general':'📦'} %}
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;">
+    <div>
+
+      <!-- Progress bar -->
+      {% set total_items = trip.checklist|length %}
+      {% set packed_items = trip.checklist|selectattr('is_packed')|list|length %}
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div class="card-body" style="padding:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-weight:700;">Packing Progress</span>
+            <span style="color:var(--teal);font-weight:700;">{{ packed_items }}/{{ total_items }}</span>
+          </div>
+          <div class="budget-bar-track" style="height:12px;">
+            <div class="budget-bar-fill" style="width:{{ (packed_items/total_items*100) if total_items > 0 else 0 }}%;background:var(--teal);"></div>
+          </div>
+          {% if total_items > 0 and packed_items == total_items %}
+          <div style="margin-top:10px;color:var(--teal);font-weight:600;font-size:.9rem;">🎉 All packed! Ready to go!</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Items grouped by category -->
+      {% for cat in categories %}
+      {% set cat_items = trip.checklist|selectattr('category','eq',cat)|list %}
+      {% if cat_items %}
+      <div class="card fade-up" style="margin-bottom:16px;">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            {{ cat_icons.get(cat,'📦') }} {{ cat|capitalize }}
+            <span class="badge badge-sand" style="font-size:.72rem;">
+              {{ cat_items|selectattr('is_packed')|list|length }}/{{ cat_items|length }}
+            </span>
+          </div>
+          {% for item in cat_items %}
+          <div class="check-item {% if item.is_packed %}packed{% endif %}" id="check-{{ item.id }}">
+            <div class="check-box {% if item.is_packed %}checked{% endif %}" onclick="toggleItem({{ item.id }})">
+              {% if item.is_packed %}✓{% endif %}
+            </div>
+            <span class="check-label">{{ item.item }}</span>
+            <span style="font-size:.75rem;color:var(--ink-lt);cursor:pointer;padding:4px;" onclick="deleteItem({{ item.id }})">✕</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      {% if not trip.checklist %}
+      <div class="card fade-up">
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <h3>Checklist is empty</h3>
+          <p>Add items to track what you need to pack.</p>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Add Item Sidebar -->
+    <div>
+      <div class="card fade-up fade-up-1" style="position:sticky;top:24px;">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:16px;">➕ Add Items</div>
+          <form method="POST">
+            <div class="form-group">
+              <label class="form-label">Item Name</label>
+              <input type="text" name="item" class="form-control" placeholder="e.g. Passport" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-control">
+                {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat_icons.get(cat,'') }} {{ cat|capitalize }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Add Item</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Quick Add Suggestions -->
+      <div class="card fade-up fade-up-2" style="margin-top:16px;">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:12px;">💡 Quick Add</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;" id="suggestions"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const suggestions = [
+  ['Passport','documents'], ['Visa','documents'], ['Travel Insurance','documents'],
+  ['T-Shirts','clothing'], ['Jeans','clothing'], ['Jacket','clothing'],
+  ['Phone Charger','electronics'], ['Power Bank','electronics'], ['Adapter','electronics'],
+  ['Toothbrush','toiletries'], ['Sunscreen','toiletries'], ['Medicines','toiletries'],
+  ['Camera','electronics'], ['Earphones','electronics'], ['Snacks','general']
+];
+
+const existingItems = {{ trip.checklist | map(attribute='item') | list | tojson }};
+
+const container = document.getElementById('suggestions');
+suggestions.forEach(([name, cat]) => {
+  if (existingItems.includes(name)) return;
+  const btn = document.createElement('button');
+  btn.className = 'badge badge-sand';
+  btn.style.cursor = 'pointer';
+  btn.textContent = '+ ' + name;
+  btn.onclick = async () => {
+    const formData = new FormData();
+    formData.append('item', name);
+    formData.append('category', cat);
+    await fetch('', { method: 'POST', body: formData });
+    location.reload();
+  };
+  container.appendChild(btn);
+});
+
+async function toggleItem(id) {
+  const r = await api('/api/checklist/' + id + '/toggle', 'POST');
+  if (r.success) {
+    const el = document.getElementById('check-' + id);
+    const box = el.querySelector('.check-box');
+    if (r.is_packed) {
+      el.classList.add('packed');
+      box.classList.add('checked');
+      box.textContent = '✓';
+    } else {
+      el.classList.remove('packed');
+      box.classList.remove('checked');
+      box.textContent = '';
+    }
+  }
+}
+
+async function deleteItem(id) {
+  const r = await api('/api/checklist/' + id, 'DELETE');
+  if (r.success) {
+    document.getElementById('check-' + id)?.remove();
+    showToast('Item removed');
+  }
+}
+</script>
+{% endblock %}

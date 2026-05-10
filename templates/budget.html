@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Budget — {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <p style="color:var(--ink-lt);font-size:.85rem;margin-bottom:4px;">✈️ {{ trip.name }}</p>
+      <h1 style="font-size:1.8rem;">Budget & Costs</h1>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-outline">← Builder</a>
+      <a href="{{ url_for('itinerary_view', trip_id=trip.id) }}" class="btn btn-dark">👁 View Trip</a>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+  {% set budget_set = trip.budget > 0 %}
+
+  <!-- Summary Cards -->
+  <div class="stats-strip fade-up">
+    <div class="stat-box">
+      <div class="stat-value" style="color:var(--teal);">${{ "%.0f"|format(total) }}</div>
+      <div class="stat-label">Total Estimated</div>
+    </div>
+    {% if budget_set %}
+    <div class="stat-box">
+      <div class="stat-value" style="color:{{ 'var(--coral)' if total > trip.budget else 'var(--teal)' }}">
+        ${{ "%.0f"|format(trip.budget) }}
+      </div>
+      <div class="stat-label">Set Budget</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" style="color:{{ 'var(--coral)' if total > trip.budget else 'var(--teal)' }}">
+        {{ '+' if total > trip.budget else '-' }}${{ "%.0f"|format((total - trip.budget)|abs) }}
+      </div>
+      <div class="stat-label">{{ 'Over Budget' if total > trip.budget else 'Under Budget' }}</div>
+    </div>
+    {% endif %}
+    <div class="stat-box">
+      <div class="stat-value">{{ trip.stops|length }}</div>
+      <div class="stat-label">Cities</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
+
+    <!-- Category Breakdown -->
+    <div class="card fade-up fade-up-1">
+      <div class="card-body">
+        <h3 style="margin-bottom:20px;">📊 Cost by Category</h3>
+        {% if categories %}
+          {% set cat_colors = {'sightseeing':'#2A7D6F','food':'#E8A030','adventure':'#E05A3A','culture':'#6B48FF','wellness':'#EC4899','transport':'#3B82F6','stay':'#F59E0B','meals':'#10B981'} %}
+          {% for cat, amt in categories.items() %}
+          <div class="budget-bar-wrap">
+            <div class="budget-bar-label">
+              <span style="font-weight:600;text-transform:capitalize;">{{ cat }}</span>
+              <span style="color:var(--teal);font-weight:700;">${{ "%.2f"|format(amt) }}</span>
+            </div>
+            <div class="budget-bar-track">
+              {% set pct = (amt / total * 100) if total > 0 else 0 %}
+              <div class="budget-bar-fill"
+                style="width:{{ pct }}%;background:{{ cat_colors.get(cat,'#999') }};"></div>
+            </div>
+            <div style="font-size:.75rem;color:var(--ink-lt);margin-top:3px;">{{ "%.1f"|format(pct) }}% of total</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state" style="padding:40px 0;">
+            <div class="empty-icon" style="font-size:2.5rem;">💰</div>
+            <p>No costs recorded yet. Add activities with costs.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Per-City Breakdown + Donut Chart -->
+    <div>
+      <div class="card fade-up fade-up-2">
+        <div class="card-body">
+          <h3 style="margin-bottom:20px;">🗺️ Cost per City</h3>
+          {% for stop in trip.stops %}
+          {% set stop_total = namespace(n=0) %}
+          {% for act in stop.activities %}{% set stop_total.n = stop_total.n + act.cost %}{% endfor %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600;">📍 {{ stop.city }}</div>
+              <div style="font-size:.8rem;color:var(--ink-lt);">{{ stop.activities|length }} activities</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--teal);">${{ "%.2f"|format(stop_total.n) }}</div>
+              {% if total > 0 %}
+              <div style="font-size:.75rem;color:var(--ink-lt);">{{ "%.1f"|format(stop_total.n / total * 100) }}%</div>
+              {% endif %}
+            </div>
+          </div>
+          {% else %}
+          <p style="color:var(--ink-lt);font-size:.88rem;">No stops added yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Donut visual -->
+      <div class="card fade-up fade-up-3" style="margin-top:16px;">
+        <div class="card-body" style="text-align:center;">
+          <h3 style="margin-bottom:16px;">🥧 Spending Split</h3>
+          <canvas id="donutChart" width="200" height="200" style="max-width:200px;margin:0 auto;"></canvas>
+          <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;" id="chartLegend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Over-budget alert -->
+  {% if budget_set and total > trip.budget %}
+  <div class="alert alert-error fade-up" style="margin-top:20px;">
+    ⚠️ You're ${{ "%.2f"|format(total - trip.budget) }} over your budget of ${{ "%.2f"|format(trip.budget) }}. Consider trimming some activities.
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple donut chart without library
+const cats = {{ categories | tojson }};
+const colors = {sightseeing:'#2A7D6F',food:'#E8A030',adventure:'#E05A3A',culture:'#6B48FF',wellness:'#EC4899',transport:'#3B82F6',stay:'#F59E0B',meals:'#10B981'};
+const total = {{ total }};
+
+if (total > 0) {
+  const canvas = document.getElementById('donutChart');
+  const ctx = canvas.getContext('2d');
+  let startAngle = -Math.PI / 2;
+  const cx = 100, cy = 100, r = 75, innerR = 45;
+  const legend = document.getElementById('chartLegend');
+
+  Object.entries(cats).forEach(([cat, val], i) => {
+    const slice = (val / total) * 2 * Math.PI;
+    const color = colors[cat] || '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    startAngle += slice;
+
+    legend.innerHTML += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:.78rem;">
+      <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;"></span>
+      ${cat}
+    </span>`;
+  });
+
+  // Inner hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR, 0, 2 * Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // Center text
+  ctx.fillStyle = '#1A1A1A';
+  ctx.font = 'bold 18px DM Sans';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('$' + Math.round(total), cx, cy);
+}
+</script>
+{% endblock %}

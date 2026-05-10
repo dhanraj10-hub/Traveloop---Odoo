@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Profile — Traveloop{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <h1>Profile & Settings</h1>
+      <p style="color:var(--ink-lt);margin-top:4px;">Manage your account</p>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:800px;">
+
+    <!-- Profile Card -->
+    <div class="card fade-up" style="grid-column:1/-1;">
+      <div style="padding:24px;display:flex;align-items:center;gap:20px;border-bottom:1px solid var(--border);background:var(--sand);">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:2rem;color:white;font-weight:700;flex-shrink:0;">
+          {{ user.name[0]|upper }}
+        </div>
+        <div>
+          <div style="font-size:1.3rem;font-weight:800;font-family:'Playfair Display',serif;">{{ user.name }}</div>
+          <div style="color:var(--ink-lt);">{{ user.email }}</div>
+          <div style="margin-top:6px;">
+            <span class="badge badge-teal">🌍 Explorer</span>
+            <span class="badge badge-sand" style="margin-left:6px;">Member since {{ user.created_at.strftime('%b %Y') if user.created_at else '2024' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="card fade-up fade-up-1">
+      <div class="card-body">
+        <h3 style="margin-bottom:20px;">✏️ Edit Profile</h3>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" value="{{ user.email }}" disabled
+              style="background:var(--sand);color:var(--ink-lt);">
+            <small style="color:var(--ink-lt);font-size:.78rem;">Email cannot be changed</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preferred Language</label>
+            <select name="language" class="form-control">
+              {% for lang in ['English','Hindi','Spanish','French','German','Japanese','Portuguese'] %}
+              <option value="{{ lang }}" {% if user.language == lang %}selected{% endif %}>{{ lang }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card fade-up fade-up-2">
+      <div class="card-body">
+        <h3 style="margin-bottom:20px;">📊 Your Stats</h3>
+        {% set trips = user.trips %}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--ink-md);">Total Trips</span>
+            <span style="font-weight:700;font-size:1.1rem;">{{ trips|length }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--ink-md);">Public Trips</span>
+            <span style="font-weight:700;font-size:1.1rem;">{{ trips|selectattr('is_public')|list|length }}</span>
+          </div>
+          {% set all_stops = namespace(n=0) %}
+          {% for t in trips %}{% set all_stops.n = all_stops.n + t.stops|length %}{% endfor %}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--ink-md);">Cities Planned</span>
+            <span style="font-weight:700;font-size:1.1rem;">{{ all_stops.n }}</span>
+          </div>
+          {% set all_acts = namespace(n=0) %}
+          {% for t in trips %}{% for s in t.stops %}{% set all_acts.n = all_acts.n + s.activities|length %}{% endfor %}{% endfor %}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+            <span style="color:var(--ink-md);">Total Activities</span>
+            <span style="font-weight:700;font-size:1.1rem;">{{ all_acts.n }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card fade-up fade-up-3" style="border-color:#FCA5A5;">
+      <div class="card-body">
+        <h3 style="margin-bottom:8px;color:var(--coral);">⚠️ Danger Zone</h3>
+        <p style="font-size:.88rem;color:var(--ink-lt);margin-bottom:16px;">These actions are irreversible.</p>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline" style="border-color:var(--border);">
+          🚪 Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

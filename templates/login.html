@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Traveloop</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrapper">
+
+  <!-- Visual Side -->
+  <div class="auth-visual">
+    <div class="auth-visual-content">
+      <div style="font-size:3rem;margin-bottom:16px;">✈️</div>
+      <h1>Plan your next<br><em>adventure</em></h1>
+      <p>Craft beautiful multi-city itineraries, track budgets, and share your journey with the world.</p>
+      <div class="auth-destinations">
+        <span class="dest-chip">🗼 Paris</span>
+        <span class="dest-chip">🏯 Tokyo</span>
+        <span class="dest-chip">🗽 New York</span>
+        <span class="dest-chip">🌴 Bali</span>
+        <span class="dest-chip">🏛️ Rome</span>
+        <span class="dest-chip">🌁 London</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Side -->
+  <div class="auth-form-side">
+    <div class="auth-form-box fade-up">
+      <div class="auth-logo">
+        <div class="brand">Travel<span>oop</span></div>
+        <div class="auth-tagline">Your personal travel planner</div>
+      </div>
+
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to continue planning your adventures</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">⚠️ {{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <input type="email" name="email" class="form-control" placeholder="you@email.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+          Sign In →
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="{{ url_for('signup') }}">Sign up free</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

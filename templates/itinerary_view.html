@@ -160,3 +160,31 @@ function shareTrip() {
 }
 </script>
 {% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ trip.name }} — Traveloop{% endblock %}
+
+{% block content %}`    <!-- Trip Hero -->
+<div style="background:linear-gradient(135deg,var(--ink) 0%,#2A7D6F 100%);padding:48px 40px 40px;color:white;margin-bottom:0;">
+  <div style="max-width:900px;">        
+    <p style="color:rgba(255,255,255,.55);font-size:.85rem;margin-bottom:8px;">
+      ✈️ Trip Itinerary {% if trip.is_public %} · <span style="color:#6EE7B7;">🌍 Public</span>{% endif %}
+    </p>
+    <h1 style="color:white;margin-bottom:12px;">{{ trip.name }}</h1>
+    {% if trip.description %}
+    <p style="color:rgba(255,255,255,.7);font-size:.95rem;max-width:600px;">{{ trip.description }}</p>
+    {% endif %}
+    <div style="display:flex;gap:16px;margin-top:20px;flex-wrap:wrap;align-items:center;">
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">📅 {{ trip.start_date }} → {{ trip.end_date }}</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">📍 {{ trip.stops|length }} cities</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">💰 Total: ${{ "%.2f"|format(total_cost) }}</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.88rem;">🧑 By {{ owner.name }}</span>
+    </div>
+    {% if user and user.id == trip.user_id %}
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+      <a href="{{ url_for('itinerary_builder', trip_id=trip.id) }}" class="btn btn-primary">✏️ Edit Itinerary</a>
+      <a href="{{ url_for('trip_budget', trip_id=trip.id) }}" class="btn btn-outline" style="border-color:rgba(255,255,255,.3);color:white;">💰 Budget</a>
+      <button class="btn btn-outline" style="border-color:rgba(255,255,255,.3);color:white;" onclick="shareTrip()">🔗 Share</button>
+    </div>
+    {% endif %}
+  </div>
+</div>                

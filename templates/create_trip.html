@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Create Trip — Traveloop{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div>
+      <h1>Plan New Trip</h1>
+      <p style="color:var(--ink-lt);margin-top:4px;">Where's the next adventure?</p>
+    </div>
+    <a href="{{ url_for('my_trips') }}" class="btn btn-outline">← Back</a>
+  </div>
+</div>
+
+<div class="page-body">
+  <div style="max-width:600px;">
+    <div class="card fade-up">
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('create_trip') }}">
+
+          <div class="form-group">
+            <label class="form-label">Trip Name *</label>
+            <input type="text" name="name" class="form-control"
+              placeholder="e.g. European Summer 2025" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Start Date *</label>
+              <input type="date" name="start_date" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Date *</label>
+              <input type="date" name="end_date" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Trip Description</label>
+            <textarea name="description" class="form-control"
+              placeholder="Describe your trip, goals, or what you're excited about..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Total Budget (USD)</label>
+            <input type="number" name="budget" class="form-control"
+              placeholder="e.g. 3000" min="0" step="0.01">
+          </div>
+
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;background:var(--sand);padding:14px;border-radius:8px;">
+            <input type="checkbox" name="is_public" id="isPublic" style="width:18px;height:18px;accent-color:var(--teal);">
+            <div>
+              <label for="isPublic" style="font-weight:600;font-size:.9rem;cursor:pointer;">Make this trip public</label>
+              <div style="font-size:.8rem;color:var(--ink-lt);">Others can view and get inspired by your itinerary</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+              Create Trip & Build Itinerary →
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card fade-up fade-up-1" style="margin-top:20px;background:var(--sand);border-color:var(--border);">
+      <div class="card-body" style="padding:20px;">
+        <div style="font-weight:700;margin-bottom:12px;">💡 Planning Tips</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li style="font-size:.88rem;color:var(--ink-md);">✓ Add travel dates for each city to see a clear timeline</li>
+          <li style="font-size:.88rem;color:var(--ink-md);">✓ Set a total budget to track spending across activities</li>
+          <li style="font-size:.88rem;color:var(--ink-md);">✓ Use the Itinerary Builder to add cities and activities</li>
+          <li style="font-size:.88rem;color:var(--ink-md);">✓ Share your trip publicly to inspire other travelers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
