@@ -23,6 +23,9 @@
         <div>
           <div style="font-size:1.3rem;font-weight:800;font-family:'Playfair Display',serif;">{{ user.name }}</div>
           <div style="color:var(--ink-lt);">{{ user.email }}</div>
+          <div class="travel-rank">
+          🏆 Elite Explorer — Level 7
+          </div>
           <div style="margin-top:6px;">
             <span class="badge badge-teal">🌍 Explorer</span>
             <span class="badge badge-sand" style="margin-left:6px;">Member since {{ user.created_at.strftime('%b %Y') if user.created_at else '2024' }}</span>
@@ -104,6 +107,9 @@
         <a href="{{ url_for('logout') }}" class="btn btn-outline" style="border-color:var(--border);">
           🚪 Sign Out
         </a>
+        <div class="ai-powered">
+        ✨ Powered by Traveloop AI
+        </div>
       </div>
     </div>
   </div>
