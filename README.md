@@ -1,5 +1,5 @@
 # Traveloop - Odoo
-An app used forvtraveller for creating their plans to shown easily.
+An app used for traveller for creating their plans to shown easily.
 
 A full-stack travel planning web application built with **Flask + SQLite + HTML/CSS/JS**.
 
